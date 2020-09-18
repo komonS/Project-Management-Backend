@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket io</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        $(function () {
+          var socket = io();
+          $('form').submit(function(e){
+            e.preventDefault(); // prevents page reloading
+            socket.emit('chat message', $('#m').val(), $('#username').val());
+            $('#m').val('');
+            return false;
+          });
+          socket.on('chat message', function(msg,username){
+            $('#messages').append($('<li>').text(username+' : '+msg));
+          });
+        });
+      </script>
+</head>
+<body>
+    Hello Socket.io
+    <div class="message-box">
+        <ul id="messages">
+
+        </ul>
+
+    </div>
+    <div class="message-text">
+        <form>
+            <input type="text" id="username">
+            <input type="text" id="m">
+            <button type="submit" autocomplete="off">send</button>
+        </form>
+    </div>
+</body>
+</html>
