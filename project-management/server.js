@@ -180,8 +180,8 @@ app.get('/task', (req, res) => {
             " INNER JOIN project_status ON project_status.project_status_ID   = subproject_detail.project_status_ID " +
             " LEFT JOIN member ON project_detail.memberID = member.memberID " +
             " WHERE subproject_detail.memberID = '" + req.query.memberID + "'" +
-            " AND ((DATEDIFF(subproject_detail.subProjectStart,subproject_detail.subProjectEnd)) * 60)/100 >= DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)" +
-            "AND subproject_detail.project_status_ID != '5' AND subproject_detail.project_status_ID != '6' " +
+            //" AND ((DATEDIFF(subproject_detail.subProjectStart,subproject_detail.subProjectEnd)) * 60)/100 >= DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)" +
+            " AND (subproject_detail.project_status_ID != '5' AND subproject_detail.project_status_ID != '6') " +
             "AND ((DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)) * 60)/100 >= 0"
         //console.log(sql)
 
@@ -278,7 +278,7 @@ app.get('/task/count', (req, res) => {
             " INNER JOIN project_status ON project_status.project_status_ID   = subproject.projectID " +
             " LEFT JOIN member ON project_detail.memberID = member.memberID " +
             " WHERE subproject_detail.memberID = '" + req.query.memberID + "'" +
-            " AND ((DATEDIFF(subproject_detail.subProjectStart,subproject_detail.subProjectEnd)) * 60)/100 >= DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)" +
+            //" AND ((DATEDIFF(subproject_detail.subProjectStart,subproject_detail.subProjectEnd)) * 60)/100 >= DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)" +
             "AND subproject_detail.project_status_ID != '5' AND subproject_detail.project_status_ID != '6' " +
             "AND ((DATEDIFF('" + date_now + "',subproject_detail.subProjectEnd)) * 60)/100 >= 0"
         //console.log(sql)
@@ -389,7 +389,7 @@ app.post('/project/detail', (req, res) => {
                 status: 'error',
                 detail: err
             })
-        }else {
+        } else {
             res.json({
                 status: 'success',
                 detail: 'create project is success',
@@ -401,37 +401,20 @@ app.post('/project/detail', (req, res) => {
 
 app.get('/project', (req, res) => {
     let sql = ""
-    if(req.query.projectID != undefined){
+    if (req.query.projectID != undefined) {
         sql = "SELECT * FROM project " +
-        "INNER JOIN project_detail ON project_detail.projectID = project.projectID " +
-        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID " +
-        "INNER JOIN priority ON priority.priorityID = project.projectPiorityID"+
-        " WHERE project_detail.memberID = '" + req.query.memberID + "' AND project.projectID = '"+req.query.projectID+"' "
-    }else{
+            "INNER JOIN project_detail ON project_detail.projectID = project.projectID " +
+            "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID " +
+            "INNER JOIN priority ON priority.priorityID = project.projectPiorityID" +
+            " WHERE project_detail.memberID = '" + req.query.memberID + "' AND project.projectID = '" + req.query.projectID + "' "
+    } else {
         sql = "SELECT * FROM project " +
-        "INNER JOIN project_detail ON project_detail.projectID = project.projectID " +
-        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID " +
-        "INNER JOIN priority ON priority.priorityID = project.projectPiorityID"+
-        " WHERE project_detail.memberID = '" + req.query.memberID + "' "
+            "INNER JOIN project_detail ON project_detail.projectID = project.projectID " +
+            "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID " +
+            "INNER JOIN priority ON priority.priorityID = project.projectPiorityID" +
+            " WHERE project_detail.memberID = '" + req.query.memberID + "' "
 
     }
-    
-    let query = db.query(sql, (err, results) => {
-        if (err) {
-            res.json({
-                status: 'error',
-                detail: err
-            })
-        } else {
-            res.json(results)
-        }
-    })
-})
-
-app.get('/project/member',(req,res) => {
-    let sql = "SELECT member.fname , member.lname, member.memberID, member.picture,project_detail.user_project_status FROM project_detail  "+
-    "INNER JOIN member ON member.memberID = project_detail.memberID "+
-    "WHERE project_detail.projectID = '"+req.query.projectID+"'"
 
     let query = db.query(sql, (err, results) => {
         if (err) {
@@ -444,6 +427,286 @@ app.get('/project/member',(req,res) => {
         }
     })
 })
+
+app.get('/project/count',(req,res)=>{
+    let sql
+    let now = new Date();
+    let date_now = dateFormat(now, "yyyy-mm-dd");
+    let status = req.query.status
+    let memberID = req.query.memberID
+    if(status == 'going'){
+        sql = "SELECT COUNT(project.projectID) AS c FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.project_status_ID != '5' AND project.project_status_ID != '6' "+
+        //"AND ((DATEDIFF( project.projectStart,project.projectEnd)) * 60)/100 >= DATEDIFF( '"+date_now+"',project.projectEnd) "+
+        "AND project.projectStart <= '"+date_now+"' "+
+        "AND project.projectEnd >= '"+date_now+"' "
+    }else if(status == 'delayed'){
+        sql = "SELECT COUNT(project.projectID) AS c FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.projectEnd < '"+date_now+"' AND project.project_status_ID != '5' "
+    }else if(status == 'incoming'){
+        sql = "SELECT COUNT(project.projectID) AS c FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.projectStart > '"+date_now+"' AND project.project_status_ID != '5'"
+    }else if(status == 'all'){
+        sql = "SELECT COUNT(project.projectID) AS c FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "
+    }
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json(results)
+        }
+    })
+})
+
+app.get('/project/table',(req,res)=>{
+    let sql
+    let now = new Date();
+    let date_now = dateFormat(now, "yyyy-mm-dd");
+    let status = req.query.status
+    let memberID = req.query.memberID
+    if(status == 'going'){
+        sql = "SELECT * FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.project_status_ID != '5' AND project.project_status_ID != '6' "+
+        //"AND ((DATEDIFF( project.projectStart,project.projectEnd)) * 60)/100 >= DATEDIFF( '"+date_now+"',project.projectEnd) "+
+        "AND project.projectStart <= '"+date_now+"' "+
+        "AND project.projectEnd >= '"+date_now+"' "
+    }else if(status == 'delayed'){
+        sql = "SELECT * FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.projectEnd < '"+date_now+"' AND project.project_status_ID != '5' "
+    }else if(status == 'incoming'){
+        sql = "SELECT * FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "+
+        "AND project.projectStart > '"+date_now+"' AND project.project_status_ID != '5'"
+    }else if(status == 'all'){
+        sql = "SELECT * FROM project "+
+        "INNER JOIN project_detail ON project.projectID = project_detail.projectID "+
+        "INNER JOIN project_status ON project.project_status_ID = project_status.project_status_ID "+
+        "WHERE project_detail.memberID = '"+memberID+"' "
+    }
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json(results)
+        }
+    })
+})
+
+app.get('/project/member', (req, res) => {
+    let sql = "SELECT member.fname , member.lname, member.memberID, member.picture,project_detail.user_project_status FROM project_detail  " +
+        "INNER JOIN member ON member.memberID = project_detail.memberID " +
+        "WHERE project_detail.projectID = '" + req.query.projectID + "'"
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json(results)
+        }
+    })
+})
+
+app.post('/subproject', (req, res) => {
+    let projectID = req.body.projectID
+    let subName = req.body.subName
+    let detail = req.body.detail
+    let start = req.body.start
+    let end = req.body.end
+
+    let sql = "INSERT INTO subproject(subProjectName,subProjectDescript,projectID,subStart,subEnd) " +
+        "VALUES('" + subName + "','" + detail + "','" + projectID + "','" + start + "','" + end + "')"
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'create subproject complated'
+            })
+        }
+    })
+
+})
+
+app.put('/subproject/:subID',(req,res)=>{
+    let subID = req.params.subID
+    let subName = req.body.subName
+    let detail = req.body.detail
+    let start = req.body.start
+    let end = req.body.end
+    let success = req.body.success
+
+    let sql = "UPDATE subproject SET "+
+    "subProjectName = '"+subName+"', "+
+    "subProjectDescript = '"+detail+"', "+
+    "subStart = '"+start+"', "+
+    "subEnd = '"+end+"', "+
+    "subSuccess = '"+success+"' "+
+    "WHERE subProjectID = '"+subID+"' "
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'update subproject completed'
+            })
+        }
+    })
+})
+
+app.get('/subproject', (req, res) => {
+    let projectID = req.query.projectID
+    let subID = req.query.subID
+    let sql
+    if (projectID != undefined) {
+         sql = "SELECT * FROM subproject " +
+            "INNER JOIN project ON project.projectID = subproject.projectID " +
+            " WHERE subproject.projectID = '" + projectID + "'"
+    } else {
+         sql = "SELECT * FROM subproject " +
+            "INNER JOIN project ON project.projectID = subproject.projectID " +
+            " WHERE subproject.subProjectID  = '" + subID + "'"
+    }
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json(results)
+        }
+    })
+})
+
+app.delete('/subproject/:id',(req,res)=>{
+    let id = req.params.id
+    let sql = "DELETE FROM subproject WHERE subprojectID = '"+id+"'"
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'delete subproject is complated'
+            })
+        }
+    })
+})
+
+app.get('/order',(req,res)=>{
+    let subID = req.query.subID
+
+    let sql = "SELECT * FROM subproject_detail "+
+    "INNER JOIN subproject ON subproject.subProjectID = subproject_detail.subProjectID "+
+    "INNER JOIN member ON subproject_detail.memberID = member.memberID "+
+    "WHERE subproject_detail.subProjectID = '"+subID+"'"
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json(results)
+        }
+    })
+})
+
+app.post('/order',(req,res)=>{
+    let order = req.body.order
+    let subID = req.body.subID
+    let memberID = req.body.memberID
+    let statusID = req.body.statusID
+    let start = req.body.start
+    let end = req.body.end
+    let comment = req.body.comment
+    let priority = req.body.priority
+    let requester = req.body.requester
+
+    let sql = "INSERT INTO subproject_detail(subProjectDetailName,subProjectID,memberID,project_status_ID,subProjectStart,subProjectEnd,subProjectComment,subProjectPriorityID,requester) "+
+    "VALUES('"+order+"','"+subID+"','"+memberID+"','"+statusID+"','"+start+"','"+end+"','"+comment+"','"+priority+"','"+requester+"') "
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'insert order is complated'
+            })
+        }
+    })
+})
+
+
+app.delete('/order/:id',(req,res)=>{
+    let id = req.params.id
+
+    let sql = "DELETE FROM subproject_detail WHERE subProjectDetail_ID  = '"+id+"'"
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'delete order is complated'
+            })
+        }
+    })
+})
+
 app.listen('3000', () => {     // 
     console.log('start port 3000')
 })
