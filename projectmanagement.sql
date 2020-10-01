@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 25, 2020 at 11:26 AM
+-- Generation Time: Oct 01, 2020 at 11:36 AM
 -- Server version: 10.4.13-MariaDB
 -- PHP Version: 7.4.7
 
@@ -24,6 +24,30 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `group_project`
+--
+
+CREATE TABLE `group_project` (
+  `groupID` int(11) NOT NULL,
+  `projectID` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `group_project_detail`
+--
+
+CREATE TABLE `group_project_detail` (
+  `groupDetailID` int(11) NOT NULL,
+  `groupID` int(11) NOT NULL,
+  `memberID` int(11) NOT NULL,
+  `memberStatusID` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `member`
 --
 
@@ -33,6 +57,7 @@ CREATE TABLE `member` (
   `password` varchar(200) NOT NULL,
   `fname` varchar(50) NOT NULL,
   `lname` varchar(50) NOT NULL,
+  `email` varchar(200) NOT NULL,
   `picture` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -40,8 +65,28 @@ CREATE TABLE `member` (
 -- Dumping data for table `member`
 --
 
-INSERT INTO `member` (`memberID`, `username`, `password`, `fname`, `lname`, `picture`) VALUES
-(1, 'admin', '1234', 'admin', '', '83812824_2707459142676018_8809762155059478528_o.jpg');
+INSERT INTO `member` (`memberID`, `username`, `password`, `fname`, `lname`, `email`, `picture`) VALUES
+(1, 'admin', '1234', 'admin', 'komon2', 'admin@admin.com', '83812824_2707459142676018_8809762155059478528_o.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `member_status`
+--
+
+CREATE TABLE `member_status` (
+  `memberStatusID` int(11) NOT NULL,
+  `memberStatusName` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `member_status`
+--
+
+INSERT INTO `member_status` (`memberStatusID`, `memberStatusName`) VALUES
+(1, 'owner'),
+(2, 'user join'),
+(3, 'viewer');
 
 -- --------------------------------------------------------
 
@@ -90,7 +135,10 @@ CREATE TABLE `project` (
 
 INSERT INTO `project` (`projectID`, `projectName`, `descript`, `project_status_ID`, `projectStart`, `projectEnd`, `projectSuccess`, `projectPiorityID`, `projectTypeID`) VALUES
 (1, 'Task', 'Personal Task', 0, '0000-00-00', '0000-00-00', '0000-00-00', 0, 1),
-(10, 'test create Project', 'test create Project', 1, '2020-09-25', '2020-09-25', '', 1, 2);
+(10, 'test create Project', 'test create Project', 1, '2020-09-25', '2020-09-25', '', 1, 2),
+(11, 'Project Management Program', 'Project Management Program', 1, '2020-09-28', '2020-09-30', '', 1, 2),
+(12, 'test create Project', 's', 1, '2020-09-29', '2020-09-30', '', 1, 2),
+(13, 'Project Management Program', '55', 1, '2020-09-30', '2020-09-30', '', 1, 2);
 
 -- --------------------------------------------------------
 
@@ -132,7 +180,10 @@ CREATE TABLE `project_detail` (
 INSERT INTO `project_detail` (`project_detail_ID`, `projectID`, `memberID`, `user_project_status`, `projectComment`) VALUES
 (1, 1, 0, 'master', ''),
 (2, 9, 1, 'master', 'test create Project'),
-(3, 10, 1, 'master', 'test create Project');
+(3, 10, 1, 'master', 'test create Project'),
+(4, 11, 1, 'master', 'Project Management Program'),
+(5, 12, 1, 'master', ''),
+(6, 13, 1, 'master', '');
 
 -- --------------------------------------------------------
 
@@ -182,10 +233,9 @@ CREATE TABLE `subproject` (
 --
 
 INSERT INTO `subproject` (`subProjectID`, `subProjectName`, `subProjectDescript`, `projectID`, `subStart`, `subEnd`, `subSuccess`) VALUES
-(9, 'tt', 'tt', 1, '', '', ''),
-(10, 'test', 'test', 1, '', '', ''),
-(11, 'test2', 'test2', 1, '', '', ''),
-(12, 'test3', 'test3', 1, '', '', '');
+(23, 'subproject1', 'subproject2', 11, '2020-09-28', '2020-09-28', '2020-09-28'),
+(25, 'Test Task', 'Test Task', 1, '', '', ''),
+(26, 'Borrow notebook', 'jj', 1, '', '', '');
 
 -- --------------------------------------------------------
 
@@ -212,20 +262,37 @@ CREATE TABLE `subproject_detail` (
 --
 
 INSERT INTO `subproject_detail` (`subProjectDetail_ID`, `subProjectDetailName`, `subProjectID`, `memberID`, `project_status_ID`, `subProjectStart`, `subProjectEnd`, `subProjectSuccess`, `subProjectComment`, `subProjectPriorityID`, `requester`) VALUES
-(7, '', 9, 1, 5, '2020-09-30', '2020-09-30', '2020-09-30', 'tt\ntt', 1, 0),
-(8, '', 10, 1, 1, '2020-09-25', '2020-09-25', '', 'test', 1, 0),
-(9, '', 11, 1, 1, '2020-09-25', '2020-09-25', '', 'test2', 1, 0),
-(10, '', 12, 1, 1, '2020-09-25', '2020-09-25', '', 'test3', 1, 0);
+(11, '', 25, 1, 1, '2020-09-28', '2020-09-28', '', 'Test Task', 1, 0),
+(14, 'test sub input', 23, 1, 1, '2020-09-29', '2020-09-30', '', 'test', 1, 0),
+(15, '', 26, 1, 1, '2020-09-30', '2020-09-30', '', 'j', 1, 0);
 
 --
 -- Indexes for dumped tables
 --
 
 --
+-- Indexes for table `group_project`
+--
+ALTER TABLE `group_project`
+  ADD PRIMARY KEY (`groupID`);
+
+--
+-- Indexes for table `group_project_detail`
+--
+ALTER TABLE `group_project_detail`
+  ADD PRIMARY KEY (`groupDetailID`);
+
+--
 -- Indexes for table `member`
 --
 ALTER TABLE `member`
   ADD PRIMARY KEY (`memberID`);
+
+--
+-- Indexes for table `member_status`
+--
+ALTER TABLE `member_status`
+  ADD PRIMARY KEY (`memberStatusID`);
 
 --
 -- Indexes for table `priority`
@@ -274,10 +341,28 @@ ALTER TABLE `subproject_detail`
 --
 
 --
+-- AUTO_INCREMENT for table `group_project`
+--
+ALTER TABLE `group_project`
+  MODIFY `groupID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `group_project_detail`
+--
+ALTER TABLE `group_project_detail`
+  MODIFY `groupDetailID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `member`
 --
 ALTER TABLE `member`
   MODIFY `memberID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `member_status`
+--
+ALTER TABLE `member_status`
+  MODIFY `memberStatusID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `priority`
@@ -289,7 +374,7 @@ ALTER TABLE `priority`
 -- AUTO_INCREMENT for table `project`
 --
 ALTER TABLE `project`
-  MODIFY `projectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `projectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `projecttype`
@@ -301,19 +386,19 @@ ALTER TABLE `projecttype`
 -- AUTO_INCREMENT for table `project_detail`
 --
 ALTER TABLE `project_detail`
-  MODIFY `project_detail_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `project_detail_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `subproject`
 --
 ALTER TABLE `subproject`
-  MODIFY `subProjectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `subProjectID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `subproject_detail`
 --
 ALTER TABLE `subproject_detail`
-  MODIFY `subProjectDetail_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `subProjectDetail_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -21,13 +21,61 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 
 app.get('/users', (req, res) => {
-    let sql = "SELECT memberID,username,fname,lname,picture FROM member WHERE memberID = '" + req.query.memberID + "'"
+    let sql = "SELECT memberID,username,fname,lname,email,picture FROM member WHERE memberID = '" + req.query.memberID + "'"
     let query = db.query(sql, (err, results) => {
         if (err) throw err
 
         res.json(results)
     })
 })
+
+app.get('/member',(req,res)=>{
+    let memberID = req.query.memberID
+    let email = req.query.email
+    let sql
+    if(memberID != undefined){
+        sql = "SELECT memberID,username,fname,lname,email,picture FROM member WHERE memberID = '"+memberID+"'"
+    }else if(email != undefined){
+        sql = "SELECT memberID,username,fname,lname,email,picture FROM member WHERE email LIKE '"+email+"%'"
+    }
+    
+
+    let query = db.query(sql, (err, results) => {
+        if (err) throw err
+
+        res.json(results)
+    })
+})
+
+app.put('/member/:memberID',(req,res)=>{
+    let memberID = req.params.memberID
+    let fname = req.body.fname
+    let lname = req.body.lname
+    let email = req.body.email
+
+    let sql = "UPDATE member SET "+
+    "fname = '"+fname+"', "+
+    "lname = '"+lname+"', "+
+    "email = '"+email+"' "+
+    " WHERE memberID = '"+memberID+"'"
+
+    let query = db.query(sql, (err, results) => {
+        if (err){
+            console.log(err)
+            res.json({
+                status : 'error',
+                detail : err
+            })
+        }else{
+            res.json({
+                status: 'success',
+                detail : 'updated data success'
+            })
+        } 
+
+    })
+})
+
 
 
 app.get('/login', (req, res) => {
@@ -686,6 +734,7 @@ app.post('/order',(req,res)=>{
         }
     })
 })
+
 
 
 app.delete('/order/:id',(req,res)=>{
