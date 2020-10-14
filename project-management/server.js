@@ -661,6 +661,43 @@ app.get('/project', (req, res) => {
     })
 })
 
+app.put('/project',(req, res)=>{
+    let projectID = req.body.projectID
+    let projectName = req.body.projectname
+    let projectDetail = req.body.detail
+    let projectStart = req.body.start
+    let projectEnd = req.body.end
+    let priority = req.body.priorityID
+    let status = req.body.statusID
+
+    let sql = "UPDATE project SET "+
+    "projectName = '"+projectName+"', "+
+    "descript = '"+projectDetail+"', "+
+    "projectStart = '"+projectStart+"', "+
+    "projectEnd = '"+projectEnd+"', "+
+    "projectPiorityID = '"+priority+"', "+
+    "project_status_ID = '"+status+"' "+
+    "WHERE projectID  = '"+projectID+"'"
+
+
+    let query = db.query(sql, (err, results) => {
+        if (err) {
+            res.json({
+                status: 'error',
+                detail: err
+            })
+        } else {
+            res.json({
+                status: 'success',
+                detail: 'update project is success',
+                projectID: projectID
+            })
+        }
+    })
+
+
+})
+
 app.get('/project/count', (req, res) => {
     let sql
     let now = new Date();
